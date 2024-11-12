@@ -58,7 +58,7 @@ async function prepare_input(buf) {
     const md = await img.metadata();
     const [img_width,img_height] = [md.width, md.height];
     const pixels = await img.removeAlpha()
-        .resize({width:640,height:640,fit:'fill'})
+    .resize({width:128,height:128,fit:'fill'})
         .raw()
         .toBuffer();
     const red = [], green = [], blue = [];
@@ -77,10 +77,11 @@ async function prepare_input(buf) {
  * @returns Raw output of neural network as a flat array of numbers
  */
 async function run_model(input) {
-    const model = await ort.InferenceSession.create("yolov8m.onnx");
-    input = new ort.Tensor(Float32Array.from(input),[1, 3, 640, 640]);
-    const outputs = await model.run({images:input});
-    return outputs["output0"].data;
+    const model = await ort.InferenceSession.create("humanDetectorYOLOv2.onnx");
+    input = new ort.Tensor(Float32Array.from(input),[1, 3, 128, 128]);
+    const outputs = await model.run({input_1: input});
+    
+    return outputs["yolov2OutputLayer_Reshape1"].data;
 }
 
 /**
